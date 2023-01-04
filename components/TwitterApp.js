@@ -2,15 +2,32 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 import TwitterFeed from './TwitterFeed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
 export default function TwitterScreen(props) {
     const navigation = props.navigation;
+    const [isLoading, setIsLoading] = React.useState(true);
     const [tweets, setTweets] = React.useState([]);
     const [newTweet, setNewTweet] = React.useState('');
+
+    React.useEffect(function () {
+        AsyncStorage.getItem('tweets')
+            .then(function (tweetsJSON) {
+                if (!tweetsJSON) return;
+                setTweets(JSON.parse(tweetsJSON));
+            })
+            .catch(function (error) {
+                console.error(error);
+            })
+            .finally(function () {
+                setIsLoading(false);
+            });
+    }, []);
+
     return (
         <View style={styles.container}>
-            <TwitterFeed tweets={tweets} navigation={navigation} />
+            {isLoading ? <Text>Loading...</Text> : <TwitterFeed tweets={tweets} navigation={navigation} />}
             <View>
                 <TextInput
                     value={newTweet}
@@ -26,7 +43,7 @@ export default function TwitterScreen(props) {
                                 const fullName = body.results[0].name.first + ' ' + body.results[0].name.last;
                                 const username = body.results[0].login.username;
                                 const picture = body.results[0].picture.thumbnail;
-                                setTweets([
+                                const newTweets = [
                                     {
                                         fullName,
                                         username,
@@ -34,8 +51,15 @@ export default function TwitterScreen(props) {
                                         text: newTweet,
                                     },
                                     ...tweets,
-                                ]);
-                                setNewTweet('');
+                                ];
+                                AsyncStorage.setItem('tweets', JSON.stringify(newTweets))
+                                    .then(function () {
+                                        setTweets(newTweets);
+                                        setNewTweet('');
+                                    })
+                                    .catch(function (error) {
+                                        console.error(error);
+                                    });
                             });
                     }}
                     title={'Add Tweet'}
