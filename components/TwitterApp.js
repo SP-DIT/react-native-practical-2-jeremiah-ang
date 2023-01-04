@@ -2,8 +2,8 @@ import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, Button } from 'react-native';
 import TwitterFeed from './TwitterFeed';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { getTweets as getFirebaseTweets, addTweet as addFirebaseTweet } from '../firebase/tweets';
 
 export default function TwitterScreen(props) {
     const navigation = props.navigation;
@@ -12,10 +12,9 @@ export default function TwitterScreen(props) {
     const [newTweet, setNewTweet] = React.useState('');
 
     React.useEffect(function () {
-        AsyncStorage.getItem('tweets')
-            .then(function (tweetsJSON) {
-                if (!tweetsJSON) return;
-                setTweets(JSON.parse(tweetsJSON));
+        getFirebaseTweets()
+            .then(function (tweets) {
+                setTweets(tweets);
             })
             .catch(function (error) {
                 console.error(error);
@@ -43,18 +42,15 @@ export default function TwitterScreen(props) {
                                 const fullName = body.results[0].name.first + ' ' + body.results[0].name.last;
                                 const username = body.results[0].login.username;
                                 const picture = body.results[0].picture.thumbnail;
-                                const newTweets = [
-                                    {
-                                        fullName,
-                                        username,
-                                        picture,
-                                        text: newTweet,
-                                    },
-                                    ...tweets,
-                                ];
-                                AsyncStorage.setItem('tweets', JSON.stringify(newTweets))
+                                const newTweetDocument = {
+                                    fullName,
+                                    username,
+                                    picture,
+                                    text: newTweet,
+                                };
+                                addFirebaseTweet(newTweetDocument)
                                     .then(function () {
-                                        setTweets(newTweets);
+                                        setTweets([newTweetDocument, ...tweets]);
                                         setNewTweet('');
                                     })
                                     .catch(function (error) {
