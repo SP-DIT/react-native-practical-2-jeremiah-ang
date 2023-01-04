@@ -1,7 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Image, Pressable, Text, View } from 'react-native';
 
-export default function Tweet(props) {
+function Tweet(props) {
     const [isSeeEvil, setIsSeeEvil] = React.useState(false);
     return (
         <View style={{ flexDirection: 'row', marginBottom: 5, width: '100%' }}>
@@ -43,3 +44,14 @@ export default function Tweet(props) {
         </View>
     );
 }
+
+Tweet.propTypes = {
+    tweet: PropTypes.shape({
+        fullName: PropTypes.string.isRequired,
+        username: PropTypes.string.isRequired,
+        text: PropTypes.string.isRequired,
+        picture: PropTypes.string.isRequired,
+    }).isRequired,
+};
+
+export default Tweet;
