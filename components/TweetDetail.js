@@ -7,9 +7,5 @@ export default function TweetDetail(props) {
     const tweets = route.params.tweets;
     const selectedIndex = route.params.selectedIndex;
 
-    navigation.setOptions({
-        tabBarStyle: { display: 'block' },
-    });
-
-    return <Tweet tweet={tweets[selectedIndex]}></Tweet>;
+    return <Tweet tweet={tweets[selectedIndex]} editing={true}></Tweet>;
 }
