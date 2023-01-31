@@ -1,8 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View, TextInput, Button } from 'react-native';
+import { updateTweet } from '../firebase/tweets';
 
 function Tweet(props) {
+    const editing = props.editing;
+    const [tweetText, setTweetText] = React.useState(props.tweet.text);
     const [isSeeEvil, setIsSeeEvil] = React.useState(false);
     return (
         <View style={{ flexDirection: 'row', marginBottom: 5, width: '100%' }}>
@@ -26,7 +29,21 @@ function Tweet(props) {
                     <Text style={{ color: 'grey' }}>@{props.tweet.username}</Text>
                 </View>
                 <View>
-                    <Text>{props.tweet.text}</Text>
+                    {editing ? (
+                        <View>
+                            <TextInput value={tweetText} onChangeText={setTweetText}></TextInput>
+                            <Button
+                                title={'Save'}
+                                onPress={function () {
+                                    updateTweet(props.tweet.id, tweetText).then(function () {
+                                        console.log('Successfully updated');
+                                    });
+                                }}
+                            ></Button>
+                        </View>
+                    ) : (
+                        <Text>{props.tweet.text}</Text>
+                    )}
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Pressable
